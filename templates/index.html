@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Calcul du prix d'une option Call</title>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <style>
+            body {
+                font-family: 'Poppins', sans-serif;
+                background-color: #f4f4f9;
+                margin: 100px;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+            .container {
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+                text-align: center;
+                width: 90%;
+                max-width: 400px;
+            }
+            h1 {
+                color: #333;
+            }
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            input, button {
+                padding: 10px;
+                font-size: 16px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+            }
+            button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            #chart {
+                width: 90%;
+                max-width: 600px;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+<body>
+    <h1>Calcul du prix d'une option Call</h1>
+    <form method="post">
+        <input type="number" step="any" name="spot" placeholder="Spot" value="100" required oninput="this.form.submit()">
+        <input type="number" step="any" name="strike" placeholder="Strike" value="100" required>
+        <input type="number" step="any" name="maturity" placeholder="Maturité (en années)" value="1" required>
+        <input type="number" step="any" name="rate" placeholder="Taux d'intérêt" value="0.05" required>
+        <input type="number" step="any" name="volatility" placeholder="Volatilité" value="0.2" required>
+        <input type="number" step="any" name="dividend" placeholder="Dividend Yield" value="0" required>
+        <button type="submit">Calculer</button>
+    </form>
+    {% if price is not none %}
+        <h2>Prix de l'option Call : {{ price }}</h2>
+    {% endif %}
+    
+    <div id="chart"></div>
+    <script>
+        var graphJSON = {{ graphJSON | safe }};
+        Plotly.newPlot('chart', graphJSON.data, graphJSON.layout);
+    </script>
+</body>
+</html>
