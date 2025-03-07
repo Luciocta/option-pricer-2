@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
@@ -79,5 +79,168 @@
         var graphJSON = {{ graphJSON | safe }};
         Plotly.newPlot('chart', graphJSON.data, graphJSON.layout);
     </script>
+</body>
+</html>
+ -->
+
+
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur d'Options Financières</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .result-card {
+            background-color: #e9f7fe;
+            border-left: 4px solid #0d6efd;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .result-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Calcul du prix d'une option</h1>
+        
+        <div class="row">
+            <!-- Formulaire de paramètres (à gauche) -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Paramètres</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="/">
+                            <div class="mb-3">
+                                <label for="spot" class="form-label">Prix du sous-jacent (Spot)</label>
+                                <input type="number" step="0.01" class="form-control" id="spot" name="spot" value="{{ request.form['spot'] or '100' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="strike" class="form-label">Prix d'exercice (Strike)</label>
+                                <input type="number" step="0.01" class="form-control" id="strike" name="strike" value="{{ request.form['strike'] or '100' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="maturity" class="form-label">Maturité (années)</label>
+                                <input type="number" step="0.01" class="form-control" id="maturity" name="maturity" value="{{ request.form['maturity'] or '1' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="rate" class="form-label">Taux d'intérêt</label>
+                                <input type="number" step="0.01" class="form-control" id="rate" name="rate" value="{{ request.form['rate'] or '0.05' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="volatility" class="form-label">Volatilité</label>
+                                <input type="number" step="0.01" class="form-control" id="volatility" name="volatility" value="{{ request.form['volatility'] or '0.2' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="dividend" class="form-label">Dividende</label>
+                                <input type="number" step="0.01" class="form-control" id="dividend" name="dividend" value="{{ request.form['dividend'] or '0' }}" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Calculer</button>
+                        </form>
+                    </div>
+                </div>
+                
+                {% if price is not none %}
+                <div class="card result-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Résultats</h5>
+                        <div class="mb-2">
+                            <span>Prix de l'option :</span>
+                            <span class="result-value">{{ price }}</span>
+                        </div>
+                        <div>
+                            <span>Delta de l'option :</span>
+                            <span class="result-value">{{ delta_value }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Graphique (à droite) -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Visualisation</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if graphJSON %}
+                        <div id="chart" style="height: 500px;"></div>
+                        {% else %}
+                        <div class="text-center p-5 text-muted">
+                            <p>Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Panneau d'informations supplémentaires -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Informations complémentaires</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Sensibilités (Greeks)</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Delta:</span>
+                                        <span>{{ delta_value or 'N/A' }}</span>
+                                    </li>
+                                    <!-- Vous pourriez ajouter d'autres Greeks ici -->
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Paramètres du modèle</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Modèle:</span>
+                                        <span>Black-Scholes</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Type d'option:</span>
+                                        <span>Call européen</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    {% if graphJSON %}
+    <script>
+        var graphData = {{ graphJSON|safe }};
+        Plotly.newPlot('chart', graphData.data, graphData.layout);
+    </script>
+    {% endif %}
 </body>
 </html>

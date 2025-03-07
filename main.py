@@ -41,12 +41,21 @@ def index():
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=S_values, y=prices, mode='lines', name="Prix de l'option Call"))
-    fig.update_layout(title="Premium en fonction du Spot",
-                      xaxis_title="Spot",
-                      yaxis_title="Premium")
-    
+    fig.update_layout(
+        title="Premium en fonction du Spot",
+        xaxis_title="Spot",
+        yaxis_title="Premium",
+        xaxis=dict(
+            range=[50, 150],  # Définir explicitement les limites de l'axe x
+            dtick=10  # Définir l'intervalle entre les graduations
+            ),
+        yaxis=dict(
+            range=[min(prices), max(prices)],  # ou des valeurs spécifiques
+            dtick=5  # Ajustez selon vos besoins
+            ),
+    )
     graphJSON = pio.to_json(fig)
-    
+
     return render_template('index.html', price=price, delta_value = delta_value, graphJSON=graphJSON)
 
 if __name__ == '__main__':
