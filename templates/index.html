@@ -4,356 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calcul du prix d'une option</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f9f9f9;
+            color: #333;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .header {
+        h1 {
             text-align: center;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr; /* Deux colonnes : Paramètres (1/3) et Visualisation (2/3) */
+            gap: 20px;
             padding: 20px;
-            background-color: #007bff;
+        }
+        .parameters, .visualization {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .parameters h2, .visualization h2 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .parameters form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .parameters form input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
             color: white;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
         }
-
-        .section {
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        button:hover {
+            background-color: #2980b9;
         }
-
         .tabs {
             display: flex;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .tablinks {
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #f1f1f1;
-            border: none;
-            outline: none;
-        }
-
-        .tablinks.active {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .tabcontent {
-            display: none;
-        }
-
-        .tabcontent.active {
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Calcul du prix d'une option</h1>
-        </div>
-
-        <!-- Section Paramètres -->
-        <div class="section">
-            <h3>Paramètres</h3>
-            <form method="POST" action="/">
-                <label for="spot">Prix du sous-jacent (Spot)</label>
-                <input type="number" id="spot" name="spot" value="100" step="0.01">
-
-                <label for="strike">Prix d'exercice (Strike)</label>
-                <input type="number" id="strike" name="strike" value="100" step="0.01">
-
-                <label for="maturity">Maturité (années)</label>
-                <input type="number" id="maturity" name="maturity" value="1" step="0.01">
-
-                <label for="rate">Taux d'intérêt</label>
-                <input type="number" id="rate" name="rate" value="0.05" step="0.01">
-
-                <label for="volatility">Volatilité</label>
-                <input type="number" id="volatility" name="volatility" value="0.2" step="0.01">
-
-                <label for="dividend">Dividende</label>
-                <input type="number" id="dividend" name="dividend" value="0" step="0.01">
-
-                <button type="submit">Calculer</button>
-            </form>
-        </div>
-
-        <!-- Section Résultats -->
-        {% if price is not none %}
-        <div class="section">
-            <h3>Résultats</h3>
-            <p>Prix de l'option : {{ price }}</p>
-            <p>Delta de l'option : {{ delta_value }}</p>
-        </div>
-        {% endif %}
-
-        <!-- Section Visualisation -->
-        <div class="section">
-            <h3>Visualisation</h3>
-
-            <!-- Onglets -->
-            <div class="tabs">
-                <button class="tablinks active" onclick="openTab(event, 'Premium')">Premium</button>
-                <button class="tablinks" onclick="openTab(event, 'Delta')">Delta</button>
-            </div>
-
-            <!-- Contenu des onglets -->
-            <!-- Premium -->
-            <div id="Premium" class="tabcontent active">
-                {% if graphJSON %}
-                    <div id="graph-premium"></div>
-                    <script>
-                        var graphPremium = {{ graphJSON | safe }};
-                        Plotly.newPlot('graph-premium', graphPremium.data, graphPremium.layout);
-                    </script>
-                {% else %}
-                    <p>Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique Premium.</p>
-                {% endif %}
-            </div>
-
-            <!-- Delta -->
-            <div id="Delta" class="tabcontent">
-                {% if graphJSON_delta %}
-                    <div id="graph-delta"></div>
-                    <script>
-                        var graphDelta = {{ graphJSON_delta | safe }};
-                        Plotly.newPlot('graph-delta', graphDelta.data, graphDelta.layout);
-                    </script>
-                {% else %}
-                    <p>Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique Delta.</p>
-                {% endif %}
-            </div>
-
-        </div>
-
-        <!-- Section Informations complémentaires -->
-        <div class="section">
-            <h3>Informations complémentaires</h3>
-            
-            <!-- Sensibilités (Greeks) -->
-            <p><strong>Sensibilités (Greeks)</strong></p>
-            Delta : {{ delta_value or 'N/A' }}
-
-            <!-- Paramètres du modèle -->
-            <p><strong>Paramètres du modèle</strong></p>
-            Modèle : Black-Scholes<br />
-            Type d'option : Call européen
-        </div>
-    </div>
-
-    <!-- JavaScript pour gérer les onglets -->
-    <script>
-    function openTab(evt, tabName) {
-        var i, tabcontent, tablinks;
-
-        // Masquer tous les contenus des onglets
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].classList.remove("active");
-        }
-
-        // Supprimer la classe active des boutons
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].classList.remove("active");
-        }
-
-        // Afficher le contenu sélectionné et ajouter la classe active au bouton
-        document.getElementById(tabName).classList.add("active");
-        evt.currentTarget.classList.add("active");
-    }
-    </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-<!-- 
-
-
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculateur d'Options Financières</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .card {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            justify-content: space-around;
             margin-bottom: 20px;
         }
-        .result-card {
-            background-color: #e9f7fe;
-            border-left: 4px solid #0d6efd;
+        .tab-button {
+            flex-grow: 1;
+            text-align: center;
+            padding: 10px 0;
+            cursor: pointer;
+            background-color: #ecf0f1;
+            border-radius: 5px;
         }
-        .form-label {
-            font-weight: 500;
+        .tab-button.active {
+            background-color: #3498db;
+            color: white;
         }
-        .result-value {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #0d6efd;
+        .tab-content > div {
+            display: none; /* Masquer tous les onglets par défaut */
+        }
+        .tab-content > div.active {
+            display: block; /* Afficher uniquement l'onglet actif */
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1 class="text-center mb-4">Calcul du prix d'une option</h1>
-        
-        <div class="row">
-            <!-- Formulaire de paramètres (à gauche) --!>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Paramètres</h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="/">
-                            <div class="mb-3">
-                                <label for="spot" class="form-label">Prix du sous-jacent (Spot)</label>
-                                <input type="number" step="0.01" class="form-control" id="spot" name="spot" value="{{ request.form['spot'] or '100' }}" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="strike" class="form-label">Prix d'exercice (Strike)</label>
-                                <input type="number" step="0.01" class="form-control" id="strike" name="strike" value="{{ request.form['strike'] or '100' }}" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="maturity" class="form-label">Maturité (années)</label>
-                                <input type="number" step="0.01" class="form-control" id="maturity" name="maturity" value="{{ request.form['maturity'] or '1' }}" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="rate" class="form-label">Taux d'intérêt</label>
-                                <input type="number" step="0.01" class="form-control" id="rate" name="rate" value="{{ request.form['rate'] or '0.05' }}" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="volatility" class="form-label">Volatilité</label>
-                                <input type="number" step="0.01" class="form-control" id="volatility" name="volatility" value="{{ request.form['volatility'] or '0.2' }}" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="dividend" class="form-label">Dividende</label>
-                                <input type="number" step="0.01" class="form-control" id="dividend" name="dividend" value="{{ request.form['dividend'] or '0' }}" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100">Calculer</button>
-                        </form>
-                    </div>
-                </div>
-                
-                {% if price is not none %}
-                <div class="card result-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Résultats</h5>
-                        <div class="mb-2">
-                            <span>Prix de l'option :</span>
-                            <span class="result-value">{{ price }}</span>
-                        </div>
-                        <div>
-                            <span>Delta de l'option :</span>
-                            <span class="result-value">{{ delta_value }}</span>
-                        </div>
-                    </div>
-                </div>
+    <h1>Calcul du prix d'une option</h1>
+
+    <div class="parameters">
+        <h2>Paramètres</h2>
+        <form method="POST">
+            <label for="spot">Prix du sous-jacent (Spot)</label>
+            <input type="number" id="spot" name="spot" value="100" step="0.01">
+
+            <label for="strike">Prix d'exercice (Strike)</label>
+            <input type="number" id="strike" name="strike" value="100" step="0.01">
+
+            <label for="maturity">Maturité (années)</label>
+            <input type="number" id="maturity" name="maturity" value="1" step="0.01">
+
+            <label for="rate">Taux d'intérêt</label>
+            <input type="number" id="rate" name="rate" value="0.05" step="0.001">
+
+            <label for="volatility">Volatilité</label>
+            <input type="number" id="volatility" name="volatility" value="0.2" step="0.001">
+
+            <label for="dividend">Dividende</label>
+            <input type="number" id="dividend" name="dividend" value="0" step="0.01">
+
+            <button type="submit">Calculer</button>
+        </form>
+    </div>
+
+    {% if price is not none %}
+    <div class="results">
+        <h2>Résultats</h2>
+        <p>Prix de l'option : {{ price }}</p>
+        <p>Delta de l'option : {{ delta_value }}</p>
+    </div>
+    {% endif %}
+
+    <div class="visualization">
+        <h2>Visualisation</h2>
+
+        <!-- Ajout des onglets -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('premium')">Premium</button>
+            <button class="tab-button" onclick="showTab('delta')">Delta</button>
+            <button class="tab-button" onclick="showTab('gamma')">Gamma</button>
+        </div>
+
+        <!-- Contenu des onglets -->
+        <div class="tab-content">
+            <!-- Onglet Premium -->
+            <div id="premium-tab" class="tab active">
+                {% if graphJSON_premium %}
+                    <!-- Graphique Premium -->
+                    <div id='premium-graph'></div>
+                    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+                    <script>
+                        var graphPremium = {{ graphJSON_premium | safe }};
+                        Plotly.newPlot('premium-graph', graphPremium.data, graphPremium.layout);
+                    </script>
+                {% else %}
+                    Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique.
                 {% endif %}
             </div>
-            
-            <!-- Graphique (à droite) --!>
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Visualisation</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if graphJSON %}
-                        <div id="chart" style="height: 500px;"></div>
-                        {% else %}
-                        <div class="text-center p-5 text-muted">
-                            <p>Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique</p>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Panneau d'informations supplémentaires --!>
-                <div class="card mt-3">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Informations complémentaires</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Sensibilités (Greeks)</h6>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Delta:</span>
-                                        <span>{{ delta_value or 'N/A' }}</span>
-                                    </li>
-                                    <!-- Vous pourriez ajouter d'autres Greeks ici --!>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Paramètres du modèle</h6>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Modèle:</span>
-                                        <span>Black-Scholes</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span>Type d'option:</span>
-                                        <span>Call européen</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+            <!-- Onglet Delta -->
+            <div id="delta-tab" class="tab">
+                {% if graphJSON_delta %}
+                    <!-- Graphique Delta -->
+                    <div id='delta-graph'></div>
+                    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+                    <script>
+                        var graphDelta = {{ graphJSON_delta | safe }};
+                        Plotly.newPlot('delta-graph', graphDelta.data, graphDelta.layout);
+                    </script>
+                {% else %}
+                    Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique.
+                {% endif %}
+            </div>
+
+            <!-- Onglet Gamma -->
+            <div id="gamma-tab" class="tab">
+                <!-- Placeholder pour le graphique Gamma -->
+                Graphique Gamma à venir.
             </div>
         </div>
+
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    
-    {% if graphJSON %}
+
+    <!-- Script pour gérer les onglets -->
     <script>
-        var graphData = {{ graphJSON|safe }};
-        Plotly.newPlot('chart', graphData.data, graphData.layout);
-        console.log(graphData);
+        function showTab(tabName) {
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            // Désactiver tous les boutons
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+
+            // Afficher l'onglet sélectionné
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Activer le bouton correspondant
+            document.querySelector(`button[onclick='showTab("${tabName}")']`).classList.add('active');
+        }
     </script>
-    {% endif %}
+
+    <div class='additional-info'>
+        <h2>Informations complémentaires</h2>
+        <p>Sensibilités (Greeks)</p>
+        <p>Delta: {{ delta_value or 'N/A' }}</p>
+
+        <h3>Paramètres du modèle</h3>
+        <p>Modèle: Black-Scholes</p>
+        <p>Type d'option: Call européen</p>
+    </div>
+
 </body>
 </html>
-
-
- -->
