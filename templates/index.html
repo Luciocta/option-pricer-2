@@ -1,90 +1,199 @@
-<!-- <!DOCTYPE html>
-<html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Calcul du prix d'une option</title>
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <style>
-            body {
-                font-family: 'Poppins', sans-serif;
-                background-color: #f4f4f9;
-                margin: 100px;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-            }
-            .container {
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-                text-align: center;
-                width: 90%;
-                max-width: 400px;
-            }
-            h1 {
-                color: #333;
-            }
-            form {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-            input, button {
-                padding: 10px;
-                font-size: 16px;
-                border-radius: 5px;
-                border: 1px solid #ccc;
-            }
-            button {
-                background-color: #007bff;
-                color: white;
-                border: none;
-                cursor: pointer;
-                transition: background 0.3s;
-            }
-            button:hover {
-                background-color: #0056b3;
-            }
-            #chart {
-                width: 90%;
-                max-width: 600px;
-                margin-top: 20px;
-            }
-        </style>
-    </head>
-<body>
-    <h1>Calcul du prix d'une option</h1>
-    <form method="post">
-        <input type="number" step="1" name="spot" placeholder="Spot" value="100" required oninput="this.form.submit()">
-        <input type="number" step="1" name="strike" placeholder="Strike" value="100" required>
-        <input type="number" step="0.5" name="maturity" placeholder="Maturité (en années)" value="1" required>
-        <input type="number" step="0.01" name="rate" placeholder="Taux d'intérêt" value="0.05" required>
-        <input type="number" step="0.01" name="volatility" placeholder="Volatilité" value="0.2" required>
-        <input type="number" step="0.01" name="dividend" placeholder="Dividend Yield" value="0" required>
-        <button type="submit">Calculer</button>
-    </form>
-    {% if price is not none %}
-        <h2>Prix de l'option : {{ price }}</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcul du prix d'une option</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
 
-        <h2>Delta de l'option : {{ delta_value }}</h2>
-    {% endif %}
-    
-    <div id="chart"></div>
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tablinks {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: none;
+            outline: none;
+        }
+
+        .tablinks.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .tabcontent {
+            display: none;
+        }
+
+        .tabcontent.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Calcul du prix d'une option</h1>
+        </div>
+
+        <!-- Section Paramètres -->
+        <div class="section">
+            <h3>Paramètres</h3>
+            <form method="POST" action="/">
+                <label for="spot">Prix du sous-jacent (Spot)</label>
+                <input type="number" id="spot" name="spot" value="100" step="0.01">
+
+                <label for="strike">Prix d'exercice (Strike)</label>
+                <input type="number" id="strike" name="strike" value="100" step="0.01">
+
+                <label for="maturity">Maturité (années)</label>
+                <input type="number" id="maturity" name="maturity" value="1" step="0.01">
+
+                <label for="rate">Taux d'intérêt</label>
+                <input type="number" id="rate" name="rate" value="0.05" step="0.01">
+
+                <label for="volatility">Volatilité</label>
+                <input type="number" id="volatility" name="volatility" value="0.2" step="0.01">
+
+                <label for="dividend">Dividende</label>
+                <input type="number" id="dividend" name="dividend" value="0" step="0.01">
+
+                <button type="submit">Calculer</button>
+            </form>
+        </div>
+
+        <!-- Section Résultats -->
+        {% if price is not none %}
+        <div class="section">
+            <h3>Résultats</h3>
+            <p>Prix de l'option : {{ price }}</p>
+            <p>Delta de l'option : {{ delta_value }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Section Visualisation -->
+        <div class="section">
+            <h3>Visualisation</h3>
+
+            <!-- Onglets -->
+            <div class="tabs">
+                <button class="tablinks active" onclick="openTab(event, 'Premium')">Premium</button>
+                <button class="tablinks" onclick="openTab(event, 'Delta')">Delta</button>
+            </div>
+
+            <!-- Contenu des onglets -->
+            <!-- Premium -->
+            <div id="Premium" class="tabcontent active">
+                {% if graphJSON %}
+                    <div id="graph-premium"></div>
+                    <script>
+                        var graphPremium = {{ graphJSON | safe }};
+                        Plotly.newPlot('graph-premium', graphPremium.data, graphPremium.layout);
+                    </script>
+                {% else %}
+                    <p>Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique Premium.</p>
+                {% endif %}
+            </div>
+
+            <!-- Delta -->
+            <div id="Delta" class="tabcontent">
+                {% if graphJSON_delta %}
+                    <div id="graph-delta"></div>
+                    <script>
+                        var graphDelta = {{ graphJSON_delta | safe }};
+                        Plotly.newPlot('graph-delta', graphDelta.data, graphDelta.layout);
+                    </script>
+                {% else %}
+                    <p>Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique Delta.</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Section Informations complémentaires -->
+        <div class="section">
+            <h3>Informations complémentaires</h3>
+            
+            <!-- Sensibilités (Greeks) -->
+            <p><strong>Sensibilités (Greeks)</strong></p>
+            Delta : {{ delta_value or 'N/A' }}
+
+            <!-- Paramètres du modèle -->
+            <p><strong>Paramètres du modèle</strong></p>
+            Modèle : Black-Scholes<br />
+            Type d'option : Call européen
+        </div>
+    </div>
+
+    <!-- JavaScript pour gérer les onglets -->
     <script>
-        var graphJSON = {{ graphJSON | safe }};
-        Plotly.newPlot('chart', graphJSON.data, graphJSON.layout);
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+
+        // Masquer tous les contenus des onglets
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+
+        // Supprimer la classe active des boutons
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+
+        // Afficher le contenu sélectionné et ajouter la classe active au bouton
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
     </script>
 </body>
 </html>
- -->
 
 
- <!DOCTYPE html>
+
+
+
+
+
+
+
+<!-- 
+
+
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -119,7 +228,7 @@
         <h1 class="text-center mb-4">Calcul du prix d'une option</h1>
         
         <div class="row">
-            <!-- Formulaire de paramètres (à gauche) -->
+            <!-- Formulaire de paramètres (à gauche) --!>
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -179,7 +288,7 @@
                 {% endif %}
             </div>
             
-            <!-- Graphique (à droite) -->
+            <!-- Graphique (à droite) --!>
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -196,7 +305,7 @@
                     </div>
                 </div>
                 
-                <!-- Panneau d'informations supplémentaires -->
+                <!-- Panneau d'informations supplémentaires --!>
                 <div class="card mt-3">
                     <div class="card-header bg-info text-white">
                         <h5 class="mb-0">Informations complémentaires</h5>
@@ -210,7 +319,7 @@
                                         <span>Delta:</span>
                                         <span>{{ delta_value or 'N/A' }}</span>
                                     </li>
-                                    <!-- Vous pourriez ajouter d'autres Greeks ici -->
+                                    <!-- Vous pourriez ajouter d'autres Greeks ici --!>
                                 </ul>
                             </div>
                             <div class="col-md-6">
@@ -240,7 +349,11 @@
     <script>
         var graphData = {{ graphJSON|safe }};
         Plotly.newPlot('chart', graphData.data, graphData.layout);
+        console.log(graphData);
     </script>
     {% endif %}
 </body>
 </html>
+
+
+ -->

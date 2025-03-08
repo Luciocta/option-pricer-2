@@ -30,18 +30,20 @@ def index():
             
             price = fl.black_scholes(S, K, T, r, sigma, q)
             delta_value = fl.delta(S, K, T, r, sigma, q)
+    
 
         except ValueError:
             price = "Erreur dans les entrées. Veuillez entrer des nombres valides."
     
     # Génération du graphique
-    S_values = np.linspace(50, 150, 100)
+    S_values = list(np.linspace(50, 150, 100))
     prices = [fl.black_scholes(s, K, T, r, sigma, q) for s in S_values]
     delta_list = [fl.delta(s, K, T, r, sigma, q) for s in S_values]
     
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=S_values, y=prices, mode='lines', name="Prix de l'option Call"))
-    fig.update_layout(
+    #Graph Premium
+    fig_premium = go.Figure()
+    fig_premium.add_trace(go.Scatter(x=S_values, y=prices, mode='lines', name="Prix de l'option Call"))
+    fig_premium.update_layout(
         title="Premium en fonction du Spot",
         xaxis_title="Spot",
         yaxis_title="Premium",
@@ -54,9 +56,24 @@ def index():
             dtick=5  # Ajustez selon vos besoins
             ),
     )
-    graphJSON = pio.to_json(fig)
+    graphJSON_premium = pio.to_json(fig_premium)
 
-    return render_template('index.html', price=price, delta_value = delta_value, graphJSON=graphJSON)
+    # Graph Delta
+    fig_delta = go.Figure()
+    fig_delta.add_trace(go.Scatter(x=S_values, y=delta_list, mode='lines', name="Delta"))
+    fig_delta.update_layout(
+        title="Delta en fonction du Spot",
+        xaxis_title="Spot",
+        yaxis_title="Delta",
+        xaxis=dict(range=[50, 150], dtick=10),
+        yaxis=dict(range=[min(delta_list), max(delta_list)], dtick=0.1)
+    )
+    graphJSON_delta = pio.to_json(fig_delta)
+
+    return render_template('index.html', price=price, delta_value=delta_value,
+                           graphJSON_premium=graphJSON_premium,
+                           graphJSON_delta=graphJSON_delta)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
