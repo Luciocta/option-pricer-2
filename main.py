@@ -47,14 +47,10 @@ def index():
         title="Premium en fonction du Spot",
         xaxis_title="Spot",
         yaxis_title="Premium",
-        xaxis=dict(
-            range=[50, 150],  # Définir explicitement les limites de l'axe x
-            dtick=10  # Définir l'intervalle entre les graduations
-            ),
-        yaxis=dict(
-            range=[min(prices), max(prices)],  # ou des valeurs spécifiques
-            dtick=5  # Ajustez selon vos besoins
-            ),
+        xaxis=dict(range=[50, 150],dtick=10),
+        yaxis=dict(range=[min(prices), max(prices)], dtick=5),
+        width=800,  # Largeur fixe pour le graphique
+        height=500  # Hauteur fixe pour le graphique
     )
     graphJSON_premium = pio.to_json(fig_premium)
 
@@ -66,7 +62,9 @@ def index():
         xaxis_title="Spot",
         yaxis_title="Delta",
         xaxis=dict(range=[50, 150], dtick=10),
-        yaxis=dict(range=[min(delta_list), max(delta_list)], dtick=0.1)
+        yaxis=dict(range=[min(delta_list), max(delta_list)], dtick=0.1),
+        width=800,  # Largeur fixe pour le graphique
+        height=500  # Hauteur fixe pour le graphique
     )
     graphJSON_delta = pio.to_json(fig_delta)
 

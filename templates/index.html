@@ -1,38 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calcul du prix d'une option</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* Styles généraux */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
+            background-color: #f5f7fa; /* Couleur de fond douce */
             color: #333;
         }
         h1 {
             text-align: center;
             margin: 20px 0;
             color: #2c3e50;
+            font-size: 24px;
         }
+
+        /* Conteneur principal */
         .container {
             display: grid;
-            grid-template-columns: 1fr 2fr; /* Deux colonnes : Paramètres (1/3) et Visualisation (2/3) */
+            grid-template-columns: 30% 70%; /* Répartition : 30% paramètres, 70% visualisation */
             gap: 20px;
             padding: 20px;
         }
-        .parameters, .visualization {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        /* Section des paramètres */
+        .parameters {
+            background-color: #ffffff; /* Fond blanc */
+            border-radius: 10px; /* Bordures arrondies */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre douce */
             padding: 20px;
         }
-        .parameters h2, .visualization h2 {
+        .parameters h2 {
             margin-top: 0;
-            color: #3498db;
+            color: #007bff; /* Bleu vif pour les titres */
+            font-size: 18px;
         }
         .parameters form label {
             display: block;
@@ -43,22 +50,49 @@
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            border-radius: 5px; /* Bordures arrondies pour les champs */
+            border: 1px solid #ccc; /* Bordure grise claire */
         }
         button {
             width: 100%;
             padding: 10px;
-            background-color: #3498db;
+            background-color: #007bff; /* Bleu vif pour le bouton */
             color: white;
-            border-radius: 5px;
+            border-radius: 5px; /* Bordures arrondies */
             border: none;
             font-size: 16px;
             cursor: pointer;
         }
         button:hover {
-            background-color: #2980b9;
+            background-color: #0056b3; /* Bleu plus foncé au survol */
         }
+
+        /* Section des résultats */
+        .results {
+            margin-top: 20px;
+            background-color: #ffffff; /* Fond blanc */
+            border-radius: 10px; /* Bordures arrondies */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre douce */
+            padding: 20px;
+        }
+        .results h2 {
+            margin-top: 0;
+            color: #007bff; /* Bleu vif pour les titres */
+        }
+
+        /* Section de visualisation */
+        .visualization {
+            background-color: #ffffff; /* Fond blanc */
+            border-radius: 10px; /* Bordures arrondies */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre douce */
+            padding: 20px;
+        }
+        .visualization h2 {
+            margin-top: 0;
+            color: #007bff; /* Bleu vif pour les titres */
+        }
+
+        /* Onglets de visualisation */
         .tabs {
             display: flex;
             justify-content: space-around;
@@ -69,135 +103,133 @@
             text-align: center;
             padding: 10px 0;
             cursor: pointer;
-            background-color: #ecf0f1;
-            border-radius: 5px;
+            background-color: #e9ecef; /* Fond gris clair pour les onglets inactifs */
+            border-radius: 5px; /* Bordures arrondies */
         }
         .tab-button.active {
-            background-color: #3498db;
-            color: white;
+            background-color: #007bff; /* Fond bleu vif pour l'onglet actif */
+            color: white; /* Texte blanc pour l'onglet actif */
         }
+
+        /* Contenu des onglets */
         .tab-content > div {
             display: none; /* Masquer tous les onglets par défaut */
         }
         .tab-content > div.active {
             display: block; /* Afficher uniquement l'onglet actif */
         }
+
     </style>
 </head>
-
 <body>
     <h1>Calcul du prix d'une option</h1>
 
-    <div class="parameters">
-        <h2>Paramètres</h2>
-        <form method="POST">
-            <label for="spot">Prix du sous-jacent (Spot)</label>
-            <input type="number" id="spot" name="spot" value="100" step="0.01">
+    <div class="container">
+        
+        <!-- Paramètres -->
+        <div class="parameters">
+            <h2>Paramètres</h2>
+            <form method="POST">
+                <label for="spot">Prix du sous-jacent (Spot)</label>
+                <input type="number" id="spot" name="spot" value="100" step="0.01">
 
-            <label for="strike">Prix d'exercice (Strike)</label>
-            <input type="number" id="strike" name="strike" value="100" step="0.01">
+                <label for="strike">Prix d'exercice (Strike)</label>
+                <input type="number" id="strike" name="strike" value="100" step="0.01">
 
-            <label for="maturity">Maturité (années)</label>
-            <input type="number" id="maturity" name="maturity" value="1" step="0.01">
+                <label for="maturity">Maturité (années)</label>
+                <input type="number" id="maturity" name="maturity" value="1" step="0.01">
 
-            <label for="rate">Taux d'intérêt</label>
-            <input type="number" id="rate" name="rate" value="0.05" step="0.001">
+                <label for="rate">Taux d'intérêt</label>
+                <input type="number" id="rate" name="rate" value="0.05" step="0.001">
 
-            <label for="volatility">Volatilité</label>
-            <input type="number" id="volatility" name="volatility" value="0.2" step="0.001">
+                <label for="volatility">Volatilité</label>
+                <input type="number" id="volatility" name="volatility" value="0.2" step="0.001">
 
-            <label for="dividend">Dividende</label>
-            <input type="number" id="dividend" name="dividend" value="0" step="0.01">
+                <label for="dividend">Dividende</label>
+                <input type="number" id="dividend" name="dividend" value="0" step="0.01">
 
-            <button type="submit">Calculer</button>
-        </form>
-    </div>
+                <button type="submit">Calculer</button>
+            </form>
 
-    {% if price is not none %}
-    <div class="results">
-        <h2>Résultats</h2>
-        <p>Prix de l'option : {{ price }}</p>
-        <p>Delta de l'option : {{ delta_value }}</p>
-    </div>
-    {% endif %}
+             {% if price is not none %}
+                <!-- Résultats -->
+                <div class='results'>
+                    <h2>Résultats</h2>
+                    <p><strong>Prix de l'option :</strong> {{ price }}</p>
+                    <p><strong>Delta de l'option :</strong> {{ delta_value }}</p>
+                </div>
+             {% endif %}
+         </div>
 
-    <div class="visualization">
-        <h2>Visualisation</h2>
+         <!-- Visualisation -->
+         <div class='visualization'>
+             <h2>Visualisation</h2>
 
-        <!-- Ajout des onglets -->
-        <div class="tabs">
-            <button class="tab-button active" onclick="showTab('premium')">Premium</button>
-            <button class="tab-button" onclick="showTab('delta')">Delta</button>
-            <button class="tab-button" onclick="showTab('gamma')">Gamma</button>
-        </div>
+             <!-- Onglets -->
+             <div class='tabs'>
+                 <button class='tab-button active' onclick='showTab("premium")'>Premium</button>
+                 <button class='tab-button' onclick='showTab("delta")'>Delta</button>
+                 <button class='tab-button' onclick='showTab("gamma")'>Gamma</button>
+             </div>
 
-        <!-- Contenu des onglets -->
-        <div class="tab-content">
-            <!-- Onglet Premium -->
-            <div id="premium-tab" class="tab active">
-                {% if graphJSON_premium %}
-                    <!-- Graphique Premium -->
-                    <div id='premium-graph'></div>
-                    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-                    <script>
-                        var graphPremium = {{ graphJSON_premium | safe }};
-                        Plotly.newPlot('premium-graph', graphPremium.data, graphPremium.layout);
-                    </script>
-                {% else %}
-                    Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique.
-                {% endif %}
-            </div>
+             <!-- Contenu des onglets -->
+             <div class='tab-content'>
+                 <!-- Onglet Premium -->
+                 <div id='premium-tab' class='tab active'>
+                     {% if graphJSON_premium %}
+                         <!-- Graphique Premium -->
+                         <div id='premium-graph'></div>
+                         <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+                         <script>
+                             var graphPremium = {{ graphJSON_premium | safe }};
+                             Plotly.newPlot('premium-graph', graphPremium.data, graphPremium.layout);
+                         </script>
+                     {% else %}
+                         Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique.
+                     {% endif %}
+                 </div>
 
-            <!-- Onglet Delta -->
-            <div id="delta-tab" class="tab">
-                {% if graphJSON_delta %}
-                    <!-- Graphique Delta -->
-                    <div id='delta-graph'></div>
-                    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-                    <script>
-                        var graphDelta = {{ graphJSON_delta | safe }};
-                        Plotly.newPlot('delta-graph', graphDelta.data, graphDelta.layout);
-                    </script>
-                {% else %}
-                    Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique.
-                {% endif %}
-            </div>
+                 <!-- Onglet Delta -->
+                 <div id='delta-tab' class='tab'>
+                     {% if graphJSON_delta %}
+                         <!-- Graphique Delta -->
+                         <div id='delta-graph'></div>
+                         <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+                         <script>
+                             var graphDelta = {{ graphJSON_delta | safe }};
+                             Plotly.newPlot('delta-graph', graphDelta.data, graphDelta.layout);
+                         </script>
+                     {% else %}
+                         Entrez les paramètres et cliquez sur "Calculer" pour afficher le graphique.
+                     {% endif %}
+                 </div>
 
-            <!-- Onglet Gamma -->
-            <div id="gamma-tab" class="tab">
-                <!-- Placeholder pour le graphique Gamma -->
-                Graphique Gamma à venir.
-            </div>
-        </div>
+                 <!-- Onglet Gamma -->
+                 <div id='gamma-tab' class='tab'>
+                     Graphique Gamma à venir.
+                 </div>
+             </div>
 
-    </div>
+         </div>
 
-    <!-- Script pour gérer les onglets -->
-    <script>
-        function showTab(tabName) {
-            // Masquer tous les onglets
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            
-            // Désactiver tous les boutons
-            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+     </div>
 
-            // Afficher l'onglet sélectionné
-            document.getElementById(tabName + '-tab').classList.add('active');
+     <!-- Script pour gérer les onglets -->
+     <script>
+         function showTab(tabName) {
+             // Masquer tous les onglets
+             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+             
+             // Désactiver tous les boutons
+             document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
 
-            // Activer le bouton correspondant
-            document.querySelector(`button[onclick='showTab("${tabName}")']`).classList.add('active');
-        }
-    </script>
+             // Afficher l'onglet sélectionné
+             document.getElementById(tabName + '-tab').classList.add('active');
 
-    <div class='additional-info'>
-        <h2>Informations complémentaires</h2>
-        <p>Sensibilités (Greeks)</p>
-        <p>Delta: {{ delta_value or 'N/A' }}</p>
-
-        <h3>Paramètres du modèle</h3>
-        <p>Modèle: Black-Scholes</p>
-        <p>Type d'option: Call européen</p>
-    </div>
+             // Activer le bouton correspondant
+             document.querySelector(`button[onclick='showTab("${tabName}")']`).classList.add('active');
+         }
+     </script>
 
 </body>
 </html>
