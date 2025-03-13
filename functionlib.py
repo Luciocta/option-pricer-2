@@ -22,11 +22,11 @@ def black_scholes(S0, K, T, r, vol, q, opt_type="c"):
     try:
         if opt_type=="c":
             price=S0*np.exp(-q*T)*norm.cdf(d1, 0, 1)-K*np.exp(-r*T)*norm.cdf(d2, 0, 1)
-        elif opt_type=="c":
+        elif opt_type=="p":
             price=K*np.exp(-r*T)*norm.cdf(-d2, 0, 1)-S0*norm.cdf(-d1, 0, 1)
         return round(price, 2)
     except:
-        raise ValueError("Please confirm option type, either 'C' for Call or 'P' for Put")
+        raise ValueError("Please confirm option type, either 'c' for Call or 'p' for Put")
 
 
 def monte_carlo(S0, T, r, vol, M, antithetic=False):
@@ -92,9 +92,9 @@ def delta(S0, K, T, r, vol, q, opt_type='c'):
         delta = norm.cdf(d1, 0, 1) - 1
     return round(delta, 2)
 
-def gamma(S0, K, T, r, vol):
+def gamma(S0, K, T, r, sigma, q):
 
-    d1=(np.log(S0/K) + (r+vol**2/2)*T)/(vol*np.sqrt(T))
+    d1=(np.log(S0/K) + (r+sigma**2/2)*T)/(sigma*np.sqrt(T))
     Nprime = lambda x: np.exp(-x**2/2)/np.sqrt(2*np.pi)
 
-    return Nprime(d1)/(S0*vol*np.sqrt(T))
+    return Nprime(d1)*np.exp(-q*T)/(S0*sigma*np.sqrt(T))
