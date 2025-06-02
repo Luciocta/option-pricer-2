@@ -29,50 +29,6 @@ def black_scholes(S0, K, T, r, vol, q, opt_type="c"):
         raise ValueError("Please confirm option type, either 'c' for Call or 'p' for Put")
 
 
-def monte_carlo(S0, T, r, vol, M, antithetic=False):
-    """
-    S0 : spot price at time t=0
-    T : maturity (in years)
-    r : risk-free rate
-    vol : implied volatility
-    M : number of simulations
-    antithetic : Boolean type (True to improve precision of results)
-
-    Return a matrix with M columns for each simulation where a simulation represents a path for the asset price
-    """
-
-    # Fix random seed for reproductibility
-    np.random.seed(123)
-
-    if T > 0:
-        N=int(round(T*252))   ## 252 times for each trading day in a year
-        dt=T/N
-    elif T == 0:
-        return pd.DataFrame(np.full((1, M), S0), columns=[f"{i+1}" for i in range(M)])
-    else:
-        raise ValueError("T should be positive")
-    
-    nudt=(r-0.5*vol**2)*dt
-    volsdt=vol*np.sqrt(dt)
-
-    if antithetic:
-        M=int(round(M/2))
-
-    epsilon=np.random.normal(0, 1, (N, M))
-    growth_factors=np.exp(nudt + volsdt * epsilon)
-    prices=S0*pd.DataFrame(growth_factors).cumprod(axis=0)
-
-    if antithetic:
-        growth_factors_ant=np.exp(nudt - volsdt * epsilon)
-        prices_ant=S0*pd.DataFrame(growth_factors_ant).cumprod(axis=0)
-        prices=pd.concat([prices, prices_ant], axis=1, ignore_index=True)
-
-    S=pd.concat([pd.DataFrame([S0] * prices.shape[1]).T, prices], ignore_index=True)
-    S.columns=[f"{i+1}" for i in range(prices.shape[1])]
-
-    return S
-
-
 def delta(S0, K, T, r, vol, q, opt_type='c'):
     """
     S0 : spot price at time t=0

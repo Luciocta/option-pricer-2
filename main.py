@@ -20,10 +20,11 @@ def index():
     r = 0.05
     sigma = 0.2
     q = 0
-    option_type = None
+    option_type = "c"
 
     if request.method == 'POST':
         try:
+            print(request.form)
             S = float(request.form['spot'])
             K = float(request.form['strike'])
             T = float(request.form['maturity'])
@@ -32,17 +33,17 @@ def index():
             q = float(request.form['dividend'])
             option_type = str(request.form['option_type'])
 
-            price = fl.black_scholes(S, K, T, r, sigma, q)
-            delta_value = fl.delta(S, K, T, r, sigma, q)
-    
+            price = fl.black_scholes(S, K, T, r, sigma, q, option_type)
+            delta_value = fl.delta(S, K, T, r, sigma, q, option_type)
+
 
         except ValueError:
             price = "Erreur dans les entrées. Veuillez entrer des nombres valides."
     
     # Génération du graphique
     S_values = list(np.linspace(50, 150, 100))
-    prices = [fl.black_scholes(s, K, T, r, sigma, q) for s in S_values]
-    delta_list = [fl.delta(s, K, T, r, sigma, q) for s in S_values]
+    prices = [fl.black_scholes(s, K, T, r, sigma, q, option_type) for s in S_values]
+    delta_list = [fl.delta(s, K, T, r, sigma, q, option_type) for s in S_values]
     gamma_list = [fl.gamma(s, K, T, r, sigma, q) for s in S_values]
     
     #Graph Premium
